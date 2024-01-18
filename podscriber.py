@@ -1,17 +1,21 @@
 import requests
-
+import os
+from dotenv import load_dotenv
 from pydub import AudioSegment
 from openai import OpenAI
 
 def transcribe_audio(file_path):
     # Initialize OpenAI client
-    client = OpenAI()
+    load_dotenv()  # This loads the variables from .env
+    client = OpenAI(
+        api_key=os.environ.get("OPENAI_API_KEY"),
+    )
 
     # Load the entire podcast
     podcast = AudioSegment.from_mp3(file_path)
 
     # PyDub handles time in milliseconds
-    ten_minutes = 10 * 60 * 1000
+    ten_minutes = 1 * 60 * 1000 # To be fixed later
 
     # Calculate the number of chunks
     total_length = len(podcast)
@@ -21,7 +25,7 @@ def transcribe_audio(file_path):
     full_transcript = ""
 
     # for i in range(num_chunks):
-    for i in 1:
+    for i in [0]: # To be fixed later
         # Extract a 10-minute chunk
         start = i * ten_minutes
         end = min(start + ten_minutes, total_length)
