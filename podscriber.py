@@ -15,8 +15,8 @@ def transcribe_audio(file_path):
     podcast = AudioSegment.from_mp3(file_path)
 
     # PyDub handles time in milliseconds
-    ten_minutes = 1 * 60 * 1000 # To be fixed later
-
+    ten_minutes = 10 * 60 * 1000
+    
     # Calculate the number of chunks
     total_length = len(podcast)
     num_chunks = total_length // ten_minutes + (1 if total_length % ten_minutes > 0 else 0)
@@ -24,8 +24,7 @@ def transcribe_audio(file_path):
     # Initialize an empty string to hold the full transcript
     full_transcript = ""
 
-    # for i in range(num_chunks):
-    for i in [0]: # To be fixed later
+    for i in range(num_chunks):
         # Extract a 10-minute chunk
         start = i * ten_minutes
         end = min(start + ten_minutes, total_length)
@@ -50,28 +49,26 @@ def transcribe_audio(file_path):
 
     return full_transcript
 
-def insert_newlines(string, line_length):
-    words = string.split()
-    lines = []
-    current_line = ""
+def format_transcript(transcript):
+    # Initialize OpenAI client
+    load_dotenv()  # This loads the variables from .env
+    client = OpenAI(
+        api_key=os.environ.get("OPENAI_API_KEY"),
+    )
 
-    for word in words:
-        if len(current_line) + len(word) + 1 > line_length:
-            lines.append(current_line)
-            current_line = word
-        else:
-            current_line += " " + word if current_line else word
-
-    lines.append(current_line)  # Append the last line
-    return '\n'.join(lines)
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant specializing in transcribing podcasts."},
+            {"role": "user", "content": "Please breaks the following text into smaller parts, making it easier to follow who is speaking: " + transcript}
+        ]
+    )
+    return response.choices[0].message.content
 
 file_path = "/Users/jessiesun/leaning-into-your-culture.mp3"
 transcript = transcribe_audio(file_path)
 
-# Define maximum line length
-max_line_length = 100  # You can adjust this number as needed
-
-formatted_transcript = insert_newlines(transcript, max_line_length)
+formatted_transcript = format_transcript(transcript)
 
 output_file = "transcript.txt"
 with open(output_file, "w") as file:
