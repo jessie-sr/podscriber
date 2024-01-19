@@ -50,12 +50,31 @@ def transcribe_audio(file_path):
 
     return full_transcript
 
-# Usage example
+def insert_newlines(string, line_length):
+    words = string.split()
+    lines = []
+    current_line = ""
+
+    for word in words:
+        if len(current_line) + len(word) + 1 > line_length:
+            lines.append(current_line)
+            current_line = word
+        else:
+            current_line += " " + word if current_line else word
+
+    lines.append(current_line)  # Append the last line
+    return '\n'.join(lines)
+
 file_path = "/Users/jessiesun/leaning-into-your-culture.mp3"
 transcript = transcribe_audio(file_path)
 
+# Define maximum line length
+max_line_length = 100  # You can adjust this number as needed
+
+formatted_transcript = insert_newlines(transcript, max_line_length)
+
 output_file = "transcript.txt"
 with open(output_file, "w") as file:
-    file.write(transcript)
+    file.write(formatted_transcript)
 
 print(f"Transcription completed. Transcript saved to {output_file}.")
